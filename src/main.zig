@@ -164,6 +164,13 @@ const Editor = struct {
             'l' => {
                 if (cx < data.items[cy].items.len) cx += 1;
             },
+            'w' => {},
+            'o' => {
+                try data.insert(cy + 1, std.ArrayList(u8).init(alloc.allocator()));
+                cy += 1;
+                cx = 0;
+                mode = Mode.Insert;
+            },
             else => {},
         }
     }
