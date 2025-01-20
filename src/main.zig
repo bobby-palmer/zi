@@ -133,6 +133,30 @@ const Editor = struct {
             Mode.Insert => try handle_insert(ch),
             Mode.Command => try handle_command(ch),
         }
+
+        if (cy + ro < data.items.len) {
+            const width: u16 = @intCast(data.items[cy + ro].items.len);
+            if (cx + co > width) {
+                cx = @min(cols - 1, width);
+                co = width - cx;
+            }
+        } else {
+            if (cy + ro != 0) {
+                cy -= 1;
+            } else {
+                cx = 0;
+                co = 0;
+            }
+        }
+
+        if (cx == cols) {
+            cx -= 1;
+            co += 1;
+        }
+        if (cy == rows) {
+            cy -= 1;
+            ro += 1;
+        }
     }
 
     fn handle_normal(ch: u8) !void {
@@ -157,7 +181,11 @@ const Editor = struct {
                 cy += 1;
             },
             'k' => {
-                cy -= 1;
+                if (cy > 0) {
+                    cy -= 1;
+                } else if (ro > 0) {
+                    ro -= 1;
+                }
             },
             'l' => {
                 cx += 1;
