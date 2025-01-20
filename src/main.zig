@@ -203,6 +203,11 @@ const Editor = struct {
                 try data.insert(ro + cy + 1, std.ArrayList(u8).init(alloc.allocator()));
                 cy += 1;
             },
+            '\x7f' => {
+                if (cx + co == 0) {} else {
+                    _ = data.items[cy + ro].orderedRemove(cx + co - 1);
+                }
+            },
             else => {
                 try data.items[ro + cy].insert(co + cx, ch);
                 cx += 1;
