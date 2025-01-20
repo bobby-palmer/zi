@@ -157,6 +157,13 @@ const Editor = struct {
                 cx += 1;
                 cx = get_cx();
             },
+            'I' => {
+                mode = Mode.Insert;
+                cx = 0;
+                while (cx < data.items[cy].items.len and is_whitespace(data.items[cy].items[cx])) {
+                    cx += 1;
+                }
+            },
             'h' => {
                 if (cx > 0) cx -= 1;
             },
@@ -231,6 +238,13 @@ const Editor = struct {
         if (cy >= rows + rowoff) {
             rowoff = cy - rows + 1;
         }
+    }
+
+    fn is_whitespace(ch: u8) bool {
+        return (ch == ' ' or
+            ch == '\n' or
+            ch == '\t' or
+            ch == '\r');
     }
 
     fn clean() !void {
