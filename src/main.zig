@@ -244,6 +244,11 @@ const Editor = struct {
                 cx = 0;
                 mode = Mode.Insert;
             },
+            'O' => {
+                try data.insert(cy, std.ArrayList(u8).init(alloc.allocator()));
+                cx = 0;
+                mode = Mode.Insert;
+            },
             else => {},
         }
     }
