@@ -55,6 +55,7 @@ const Editor = struct {
 
     var alloc = std.heap.GeneralPurposeAllocator(.{}){};
     var data = std.ArrayList(std.ArrayList(u8)).init(alloc.allocator());
+    var cmd = std.ArrayList(u8).init(alloc.allocator());
 
     const Mode = enum { Normal, Insert, Command };
 
@@ -102,18 +103,20 @@ const Editor = struct {
         try Escape.CURSOR_TL.write(writer);
 
         var row: usize = 0;
-        while (row < rows) : (row += 1) {
+        while (row < rows - 1) : (row += 1) {
             if (row + ro < data.items.len) {
-                var len = data.items[row + ro].items.len;
+                var len = data.items[row + ro].items.len - co;
                 if (len > cols) len = cols;
 
-                try writer.writeAll(data.items[row + ro].items[0..len]);
+                try writer.writeAll(data.items[row + ro].items[co .. co + len]);
             } else {
                 try writer.writeAll("~");
             }
             try Escape.CLEAR_LINE.write(writer);
-            if (row + 1 < rows) try writer.writeAll("\r\n");
+            try writer.writeAll("\r\n");
         }
+
+        try writer.writeAll(cmd.items[0..]);
 
         try Escape.MOVE_CURSOR.write(writer);
         try Escape.SHOW_CURSOR.write(writer);
@@ -125,26 +128,68 @@ const Editor = struct {
         _ = try std.io.getStdIn().read(buf[0..]);
         const ch = buf[0];
 
-        if (mode == Mode.Normal) {
-            if (ch == ':') {
+        switch (mode) {
+            Mode.Normal => try handle_normal(ch),
+            Mode.Insert => try handle_insert(ch),
+            Mode.Command => try handle_command(ch),
+        }
+    }
+
+    fn handle_normal(ch: u8) !void {
+        switch (ch) {
+            ':' => {
                 mode = Mode.Command;
-            } else if (ch == 'i') {
+            },
+            'i' => {
                 mode = Mode.Insert;
-                if (data.items.len <= cy) {
+                if (data.items.len == 0) {
                     try data.append(std.ArrayList(u8).init(alloc.allocator()));
                 }
-            }
-        } else if (mode == Mode.Insert) {
-            if (ch == 'n') {
-                mode = Mode.Normal;
-            } else {
-                try data.items[cy].insert(cx, ch);
+            },
+            'h' => {
+                if (cx > 0) {
+                    cx -= 1;
+                } else if (co > 0) {
+                    co -= 1;
+                }
+            },
+            'j' => {
+                cy += 1;
+            },
+            'k' => {
+                cy -= 1;
+            },
+            'l' => {
                 cx += 1;
-            }
-        } else if (mode == Mode.Command) {
-            if (ch == 'q') {
-                done = true;
-            }
+            },
+            else => {},
+        }
+    }
+
+    fn handle_insert(ch: u8) !void {
+        switch (ch) {
+            '\x1b' => {
+                mode = Mode.Normal;
+            },
+            '\r' => {
+                try data.insert(ro + cy + 1, std.ArrayList(u8).init(alloc.allocator()));
+                cy += 1;
+            },
+            else => {
+                try data.items[ro + cy].insert(co + cx, ch);
+                cx += 1;
+            },
+        }
+    }
+
+    fn handle_command(ch: u8) !void {
+        if (ch == '\r') {
+            // todo exe cmd
+            done = true;
+        } else if (ch == '\x1b') {
+            mode = Mode.Normal;
+        } else {
+            try cmd.append(ch);
         }
     }
 
@@ -154,6 +199,8 @@ const Editor = struct {
         }
 
         data.deinit();
+        cmd.deinit();
+
         _ = alloc.detectLeaks();
     }
 };
