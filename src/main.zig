@@ -201,11 +201,21 @@ const Editor = struct {
             },
             '\r' => {
                 try data.insert(ro + cy + 1, std.ArrayList(u8).init(alloc.allocator()));
+                const writer = data.items[ro + cy + 1].writer();
+                _ = try writer.write(data.items[ro + cy].items[cx + co ..]);
+                try data.items[ro + cy].resize(cx + co);
                 cy += 1;
+                cx = 0;
+                co = 0;
             },
             '\x7f' => {
                 if (cx + co == 0) {} else {
                     _ = data.items[cy + ro].orderedRemove(cx + co - 1);
+                    if (cx > 0) {
+                        cx -= 1;
+                    } else {
+                        co -= 1;
+                    }
                 }
             },
             else => {
