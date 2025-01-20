@@ -152,6 +152,11 @@ const Editor = struct {
                 mode = Mode.Insert;
                 cx = get_cx();
             },
+            'a' => {
+                mode = Mode.Insert;
+                cx += 1;
+                cx = get_cx();
+            },
             'h' => {
                 if (cx > 0) cx -= 1;
             },
