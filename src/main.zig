@@ -124,6 +124,7 @@ const Editor = struct {
             try writer.writeAll("\r\n");
         }
         try writer.writeAll(cmd.items);
+        try Escape.CLEAR_LINE.write(writer);
 
         try Escape.MOVE_CURSOR.write(writer);
         try Escape.SHOW_CURSOR.write(writer);
@@ -279,6 +280,7 @@ const Editor = struct {
             done = true;
         } else if (ch == '\x1b') {
             mode = Mode.Normal;
+            cmd.clearAndFree();
         } else {
             try cmd.append(ch);
         }
