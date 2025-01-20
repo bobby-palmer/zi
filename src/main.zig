@@ -180,7 +180,22 @@ const Editor = struct {
             'l' => {
                 if (cx < data.items[cy].items.len) cx += 1;
             },
-            'w' => {},
+            'w' => {
+                var seen_ws = false;
+                while (cy < data.items.len) : (cy += 1) {
+                    while (cx < data.items[cy].items.len) : (cx += 1) {
+                        if (is_whitespace(data.items[cy].items[cx])) {
+                            seen_ws = true;
+                        } else if (seen_ws) {
+                            return;
+                        }
+                    }
+                    cx = 0;
+                    seen_ws = true;
+                }
+                cy -= 1;
+                cx = @intCast(data.items[cy].items.len);
+            },
             'o' => {
                 try data.insert(cy + 1, std.ArrayList(u8).init(alloc.allocator()));
                 cy += 1;
