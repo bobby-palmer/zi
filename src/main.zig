@@ -232,6 +232,11 @@ const Editor = struct {
                 cy = 0;
                 cx = 0;
             },
+            'G' => {
+                cx = 0;
+                cy = @intCast(data.items.len);
+                cy -= 1;
+            },
             'o' => {
                 try data.insert(cy + 1, std.ArrayList(u8).init(alloc.allocator()));
                 cy += 1;
