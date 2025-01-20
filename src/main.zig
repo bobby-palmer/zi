@@ -112,7 +112,7 @@ const Editor = struct {
                 try writer.writeAll("~");
             }
             try Escape.CLEAR_LINE.write(writer);
-            try writer.writeAll("\r\n");
+            if (row + 1 < rows) try writer.writeAll("\r\n");
         }
 
         try Escape.MOVE_CURSOR.write(writer);
@@ -123,13 +123,36 @@ const Editor = struct {
     fn handle_input() !void {
         var buf: [1]u8 = undefined;
         _ = try std.io.getStdIn().read(buf[0..]);
+        const ch = buf[0];
 
-        if (buf[0] == 'q') {
-            done = true;
+        if (mode == Mode.Normal) {
+            if (ch == ':') {
+                mode = Mode.Command;
+            } else if (ch == 'i') {
+                mode = Mode.Insert;
+                if (data.items.len <= cy) {
+                    try data.append(std.ArrayList(u8).init(alloc.allocator()));
+                }
+            }
+        } else if (mode == Mode.Insert) {
+            if (ch == 'n') {
+                mode = Mode.Normal;
+            } else {
+                try data.items[cy].insert(cx, ch);
+                cx += 1;
+            }
+        } else if (mode == Mode.Command) {
+            if (ch == 'q') {
+                done = true;
+            }
         }
     }
 
     fn clean() !void {
+        for (data.items) |row| {
+            row.deinit();
+        }
+
         data.deinit();
         _ = alloc.detectLeaks();
     }
