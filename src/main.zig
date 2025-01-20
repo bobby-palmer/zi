@@ -164,6 +164,10 @@ const Editor = struct {
                     cx += 1;
                 }
             },
+            'A' => {
+                mode = Mode.Insert;
+                cx = @intCast(data.items[cy].items.len);
+            },
             'h' => {
                 if (cx > 0) cx -= 1;
             },
