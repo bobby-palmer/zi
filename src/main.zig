@@ -152,6 +152,18 @@ const Editor = struct {
                 mode = Mode.Insert;
                 cx = get_cx();
             },
+            'h' => {
+                if (cx > 0) cx -= 1;
+            },
+            'j' => {
+                if (cy < data.items.len - 1) cy += 1;
+            },
+            'k' => {
+                if (cy > 0) cy -= 1;
+            },
+            'l' => {
+                if (cx < data.items[cy].items.len) cx += 1;
+            },
             else => {},
         }
     }
