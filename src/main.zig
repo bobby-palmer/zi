@@ -196,6 +196,42 @@ const Editor = struct {
                 cy -= 1;
                 cx = @intCast(data.items[cy].items.len);
             },
+            'b' => {
+                var seen_c = false;
+                var cyi: i32 = @intCast(cy);
+                var cxi: i32 = @intCast(cx);
+                if (cxi > 0) {
+                    cxi -= 1;
+                } else {
+                    cyi -= 1;
+                    cxi = -1;
+                }
+                while (cyi >= 0) : (cyi -= 1) {
+                    if (cxi < 0 or cxi >= data.items[@intCast(cyi)].items.len) {
+                        cxi = @intCast(data.items[@intCast(cyi)].items.len);
+                        cxi -= 1;
+                    }
+                    while (cxi >= 0) : (cxi -= 1) {
+                        if (is_whitespace(data.items[@intCast(cyi)].items[@intCast(cxi)])) {
+                            if (seen_c) {
+                                cx = @intCast(cxi);
+                                cy = @intCast(cyi);
+                                cx += 1;
+                                return;
+                            }
+                        } else {
+                            seen_c = true;
+                        }
+                    }
+                    if (seen_c) {
+                        cy = @intCast(cyi);
+                        cx = 0;
+                        return;
+                    }
+                }
+                cy = 0;
+                cx = 0;
+            },
             'o' => {
                 try data.insert(cy + 1, std.ArrayList(u8).init(alloc.allocator()));
                 cy += 1;
