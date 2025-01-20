@@ -249,6 +249,21 @@ const Editor = struct {
                 cx = 0;
                 mode = Mode.Insert;
             },
+            'd' => {
+                var buf: [1]u8 = undefined;
+                _ = try std.io.getStdIn().read(buf[0..]);
+                if (buf[0] == 'd') {
+                    if (data.items.len > 1) {
+                        const s = data.orderedRemove(cy);
+                        s.deinit();
+                        if (cy == data.items.len) {
+                            cy -= 1;
+                        }
+                    } else {
+                        data.items[0].clearAndFree();
+                    }
+                }
+            },
             else => {},
         }
     }
