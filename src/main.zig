@@ -272,6 +272,11 @@ const Editor = struct {
                     cx -= 1;
                 }
             },
+            '\t' => {
+                try data.items[cy].insert(cx, ' ');
+                try data.items[cy].insert(cx, ' ');
+                cx += 2;
+            },
             else => {
                 try data.items[cy].insert(cx, ch);
                 cx += 1;
