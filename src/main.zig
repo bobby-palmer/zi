@@ -299,10 +299,20 @@ const Editor = struct {
         }
     }
 
+    fn run_cmd() !void {
+        const equal = std.mem.eql;
+
+        if (equal(u8, cmd.items, "q")) {
+            done = true;
+        }
+
+        cmd.clearAndFree();
+        mode = Mode.Normal;
+    }
+
     fn handle_command(ch: u8) !void {
         if (ch == '\r') {
-            // todo exe cmd
-            done = true;
+            try run_cmd();
         } else if (ch == '\x1b') {
             mode = Mode.Normal;
             cmd.clearAndFree();
