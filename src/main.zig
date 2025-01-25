@@ -144,6 +144,15 @@ const Editor = struct {
         scroll();
     }
 
+    fn open_file(filename: []u8) !void {
+        var file = try std.fs.cwd().openFile(filename);
+        defer file.close();
+        
+        var reader = std.io.BufferedReader(file.reader());
+        var stream = reader.reader();
+
+    }
+
     fn handle_normal(ch: u8) !void {
         switch (ch) {
             ':' => {
@@ -304,7 +313,7 @@ const Editor = struct {
 
         if (equal(u8, cmd.items, "q")) {
             done = true;
-        }
+        } else if (equal(u8, cmd.items, "w")) {}
 
         cmd.clearAndFree();
         mode = Mode.Normal;
